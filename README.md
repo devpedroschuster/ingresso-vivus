@@ -20,4 +20,4 @@ Projeto para cadastrar os ingressos que eram vendidos pelas bailarinas do grupo,
 
 
 
-![Screenshot do App](![alt text](image-1.png))
+![Screenshot do App](images/printform.png)
