@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Compra de Ingressos</title>
+
+    <link rel="stylesheet" href="style-sheet.css">
+
+</head>
+<body>
+    <div class="container">
+        <h1>🍀 NEW SCHOOL DREAM 🍀</h1>
+        <p class="subtitle">Vivus</p>
+
+        <form id="ticketForm">
+            <div class="form-group">
+                <label for="bailarino">Nome do Bailarino:</label>
+                <input type="text" id="bailarino" name="bailarino" required>
+            </div>
+
+            <div class="form-group">
+                <label for="comprador">Nome do Comprador:</label>
+                <input type="text" id="comprador" name="comprador" required>
+            </div>
+
+            <div class="form-group">
+                <label for="cpf">CPF do Comprador:</label>
+                <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" required>
+            </div>
+
+            <div class="form-group">
+                <label for="data">Data do Espetáculo:</label>
+                <select id="data" name="data" required>
+                    <option value="">Selecione uma data</option>
+                    <option value="28/11 (Sexta-feira)">28/11 (Sexta-feira)</option>
+                    <option value="29/11 (Extra)">29/11 (Extra)</option>
+                    <option value="29/11 (Sábado)">29/11 (Sábado)</option>
+                    <option value="30/11 (Domingo)">30/11 (Domingo)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="tipo">Tipo de Ingresso:</label>
+                <select id="tipo" name="tipo" required>
+                    <option value="">Selecione o tipo</option>
+                    <option value="Antecipado">Antecipado</option>
+                    <option value="Inteira">Inteira</option>
+                    <option value="Meia">Meia</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="pagamento">Forma de Pagamento:</label>
+                <select id="pagamento" name="pagamento" required>
+                    <option value="">Selecione a forma</option>
+                    <option value="PIX">PIX</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                </select>
+            </div>
+
+            <button type="submit" class="submit-btn">Cadastrar</button>
+        </form>
+
+        <div class="success-message" id="successMessage">
+            ✓ Ingresso cadastrado com sucesso!
+        </div>
+    </div> <script src="supabase.min.js"></script>
+
+<script>
+    // Espera o HTML carregar (correto)
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // --- (A) PARTE DE CONFIGURAÇÃO DO SUPABASE ---
+
+        const SUPABASE_URL = 'https://kddpziudfpfhhaeukuxo.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkZHB6aXVkZnBmaGhhZXVrdXhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1Mzk0NzEsImV4cCI6MjA3ODExNTQ3MX0.4gNsNbrmFrs9pxOzasPvVdBiQwUnSF8CFUdMHXxJW0k';
+
+        // --- MUDANÇA 1: AQUI ESTÁ A CORREÇÃO ---
+        // Errado: const supabase = Supabase.createClient(...)
+        
+        // Correto:
+        // 1. Pegamos a função 'createClient' de dentro do objeto global 'supabase' (minúsculo)
+        const { createClient } = supabase;
+        // 2. Agora criamos o NOSSO cliente. Vamos chamar de 'supabaseClient'.
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // --- FIM DA MUDANÇA 1 ---
+
+
+        // --- (B) SEU CÓDIGO DE FORMATAÇÃO DE CPF (Não mudou) ---
+        document.getElementById('cpf').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                e.target.value = value;
+            }
+        });
+
+
+        // --- (C) SEU CÓDIGO DE ENVIO DE FORMULÁRIO (Modificado) ---
+        document.getElementById('ticketForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); 
+
+            // 1. Coletamos os dados do formulário (Não mudou)
+            const formData = {
+                bailarino: document.getElementById('bailarino').value,
+                comprador: document.getElementById('comprador').value,
+                cpf: document.getElementById('cpf').value,
+                data: document.getElementById('data').value,
+                tipo: document.getElementById('tipo').value,
+                pagamento: document.getElementById('pagamento').value
+            };
+
+            // --- MUDANÇA 2: USAR O NOME CORRETO DO CLIENTE ---
+            // Trocamos 'supabase.from' por 'supabaseClient.from'
+            const { data, error } = await supabaseClient
+                .from('vendaVivus') 
+                .insert([formData]); 
+            // --- FIM DA MUDANÇA 2 ---
+
+            // 3. Verificamos se deu tudo certo (Não mudou)
+            if (error) {
+                console.error('Erro ao enviar:', error.message);
+                alert('Desculpe, houve um erro ao cadastrar. Tente novamente.');
+            } else {
+                console.log('Cadastrado com sucesso:', data);
+                document.getElementById('successMessage').style.display = 'block';
+
+                setTimeout(() => {
+                    document.getElementById('ticketForm').reset();
+                    document.getElementById('successMessage').style.display = 'none';
+                }, 2000);
+            }
+        });
+
+    });
+</script>
+</body>
+</html>
